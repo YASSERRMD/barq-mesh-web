@@ -1,4 +1,4 @@
-//! barq-mesh-web — browser-native distributed AI agent mesh
+//! barq-mesh-web - browser-native distributed AI agent mesh
 //!
 //! Phase 1: Core Foundation
 //! - Wires barq-wasm (SIMD compute) + barq-vweb (browser vector DB)

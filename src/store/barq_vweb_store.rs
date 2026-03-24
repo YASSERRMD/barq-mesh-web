@@ -1,4 +1,4 @@
-//! barq_vweb_store — Phase 1 core
+//! barq_vweb_store - Phase 1 core
 //!
 //! Wraps the `barq-vweb` JS class (`BarqVWeb`) via wasm-bindgen extern blocks,
 //! and exposes a clean Rust/WASM public API as `BarqMeshWeb`.
@@ -106,13 +106,13 @@ extern "C" {
     fn clear(this: &BarqVWebJs) -> Promise;
 }
 
-// ── BarqMeshWeb — the public WASM class exposed to JavaScript ─────────────
+// ── BarqMeshWeb - the public WASM class exposed to JavaScript ─────────────
 
 /// `BarqMeshWeb` is the main entry point for Phase 1.
 ///
 /// It combines:
 /// - **barq-vweb** (HNSW vector DB, browser-native)
-/// - **barq-wasm** (SIMD compute kernels — `vector_normalize`, `mean`, `std_dev`)
+/// - **barq-wasm** (SIMD compute kernels - `vector_normalize`, `mean`, `std_dev`)
 ///
 /// Data flow:
 /// ```

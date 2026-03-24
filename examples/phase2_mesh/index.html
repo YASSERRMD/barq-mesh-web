@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Phase 2 — Mesh Queue + Worker Pool | barq-mesh-web</title>
+  <title>Phase 2 - Mesh Queue + Worker Pool | barq-mesh-web</title>
   <style>
     :root {
       --bg:#0d0d14;--surface:#13131f;--border:#1e1e2e;
@@ -28,7 +28,7 @@
   </style>
 </head>
 <body>
-  <h1>Phase 2 — Mesh Queue + Worker Pool</h1>
+  <h1>Phase 2 - Mesh Queue + Worker Pool</h1>
   <p class="sub">
     Spawns 4 Web Workers. Fans out 50 tasks (Ingest, Compute, Embed).
     Includes near-duplicates to test semantic dedup rejection.
@@ -73,7 +73,7 @@
         
         // Setup worker pool (4 workers)
         const pool = new WorkerPool(4);
-        log("✅ WorkerPool spawned (4 workers)", "ok");
+        log(" WorkerPool spawned (4 workers)", "ok");
 
         // Listen for results on BroadcastChannel (MeshBus equivalent in JS)
         const bc = new BroadcastChannel("mesh-bus");
@@ -87,14 +87,14 @@
           
           if (r.success) {
              const key = Object.keys(r.output)[0] || 'done';
-             log(`Task [${r.task_id}] completed in ${r.latency_ms.toFixed(2)}ms — ${key}: ${JSON.stringify(r.output[key]).substring(0, 30)}...`, "ok");
+             log(`Task [${r.task_id}] completed in ${r.latency_ms.toFixed(2)}ms - ${key}: ${JSON.stringify(r.output[key]).substring(0, 30)}...`, "ok");
           } else {
              log(`Task [${r.task_id}] failed: ${r.error}`, "err");
           }
 
           if (completed >= expected) {
             const stats = JSON.parse(pool.get_stats());
-            log(`🎯 Exit gate: Completed=${stats.completed}. Total received=${completed}.`, "ok");
+            log(` Exit gate: Completed=${stats.completed}. Total received=${completed}.`, "ok");
             btn.disabled = false;
           }
         };
@@ -155,7 +155,7 @@
         }, 100);
 
       } catch (e) {
-        log(`❌ ${e}`, "err");
+        log(` ${e}`, "err");
         btn.disabled = false;
       }
     });
