@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Phase 6 — Cross-Tab Mesh | barq-mesh-web</title>
+  <style>
+    :root {
+      --bg:#0d0d14;--surface:#13131f;--border:#1e1e2e;
+      --accent:#7c3aed;--accent2:#06b6d4;--text:#e2e8f0;
+      --muted:#64748b;--success:#10b981;--warn:#f59e0b;--err:#ef4444;
+    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{background:var(--bg);color:var(--text);font-family:'Inter',system-ui,sans-serif;
+         padding:2rem;min-height:100vh}
+    h1{font-size:1.5rem;background:linear-gradient(135deg,var(--accent),var(--accent2));
+       -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:.5rem}
+    p.sub{color:var(--muted);font-size:.85rem;margin-bottom:1.5rem}
+    .card{background:var(--surface);border:1px solid var(--border);border-radius:12px;
+          padding:1.5rem;margin-bottom:1rem}
+    .card h2{font-size:1rem;margin-bottom:1rem;color:var(--accent2)}
+    .btn{background:var(--accent);color:#fff;border:none;border-radius:8px;
+         padding:.5rem 1.2rem;cursor:pointer;font-size:.9rem;transition:opacity .2s}
+    .btn:hover{opacity:.85} .btn:disabled{opacity:.45;cursor:default}
+    .log{font-family:monospace;font-size:.8rem;background:#090911;border-radius:8px;
+         padding:1rem;max-height:260px;overflow-y:auto;line-height:1.6;
+         border:1px solid var(--border);margin-top:.75rem}
+    .ok{color:var(--success)} .warn{color:var(--warn)} .err{color:var(--err)}
+    .pill{display:inline-block;padding:.2rem .7rem;border-radius:20px;
+          font-size:.75rem;border:1px solid var(--border);background:var(--surface);
+          color:var(--muted);margin-top:.5rem}
+    .row{display:flex;gap:.65rem;align-items:center;flex-wrap:wrap;margin-bottom:.75rem}
+  </style>
+</head>
+<body>
+  <h1>Phase 6 — Cross-Tab Mesh & OPFS Distribution</h1>
+  <p class="sub">
+    Uses <code>TopologyManager</code> via BroadcastChannel to elect a Leader.
+    Only the Leader can execute OPFS Sync saves. Open this page in multiple tabs to see context sharing.
+  </p>
+
+  <div class="card">
+    <h2>1 — Node Topology</h2>
+    <div class="row">
+      <button class="btn" id="btn-spawn">Start Topology Node</button>
+      <button class="btn" id="btn-claim">Claim OPFS Leadership</button>
+      <button class="btn" id="btn-save" disabled style="background:var(--success)">Leader OPFS Save</button>
+    </div>
+    <div class="pill" id="pill-leader">Node: Passive Follower</div>
+    <div class="log" id="log-topo">Waiting…</div>
+  </div>
+
+  <script type="module">
+    import init, { TopologyManager, AiMesh } from "../../pkg/barq_mesh_web.js";
+
+    let topology = null;
+    let mesh = null;
+
+    function log(el, msg, cls = "") {
+      const line = document.createElement("div");
+      line.className = cls;
+      line.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
+      el.appendChild(line);
+      el.scrollTop = el.scrollHeight;
+    }
+
+    document.getElementById("btn-spawn").addEventListener("click", async () => {
+      const btn = document.getElementById("btn-spawn");
+      btn.disabled = true;
+      const el = document.getElementById("log-topo");
+      try {
+        await init();
+        mesh = AiMesh.create(1, "phase6-cross", 384);
+        const id = Math.random().toString(36).substring(7);
+        topology = new TopologyManager(`node-${id}`);
+        log(el, `Started Topology Node [${id}] (Passive)`, "ok");
+        log(el, `Listening for BroadcastChannel events...`, "warn");
+      } catch (e) {
+        log(el, `❌ ${e}`, "err");
+        btn.disabled = false;
+      }
+    });
+
+    document.getElementById("btn-claim").addEventListener("click", async () => {
+       const el = document.getElementById("log-topo");
+       if (!topology) {
+          log(el, "Please Start Topology Node first.", "err");
+          return;
+       }
+       
+       topology.claim_leadership();
+       log(el, `Broadcasted LEADER_CLAIM!`, "ok");
+       
+       setTimeout(() => {
+           if (topology.is_leader()) {
+               document.getElementById("pill-leader").textContent = "Node: ACTIVE LEADER 👑";
+               document.getElementById("pill-leader").style.borderColor = "var(--warn)";
+               document.getElementById("pill-leader").style.color = "var(--warn)";
+               document.getElementById("btn-save").disabled = false;
+               log(el, "✅ Leadership established. OPFS Save enabled.");
+           } else {
+               log(el, "❌ Valid Claim Received from another node. Stepped down.", "err");
+           }
+       }, 500);
+    });
+
+    document.getElementById("btn-save").addEventListener("click", async () => {
+       const el = document.getElementById("log-topo");
+       if (!topology || !topology.is_leader()) {
+           log(el, "ERROR: Only leader can perform OPFS sync.", "err");
+           return;
+       }
+       log(el, "Triggering AiMesh.persist() to OPFS as LEADER...", "warn");
+       const res = await mesh.persist();
+       log(el, `✅ OPFS Sync: ${res}`, "ok");
+    });
+  </script>
+</body>
+</html>
