@@ -1,19 +1,17 @@
 <div align="center">
 
+<img src="assets/logo.png" alt="barq-mesh-web logo" width="180"/>
+<br>
+
 # barq-mesh-web
 
-<br>
-<img src="assets/logo.png" alt="barq-mesh-web logo" width="400"/>
+**Browser-Native Distributed AI Agent Mesh**
 <br>
 
-**Browser-native, Rust/WASM distributed AI agent mesh.**
-<br>
-Built on `barq-wasm` (SIMD compute) + `barq-vweb` (browser vector DB).
-
-[![Build Status](https://img.shields.io/badge/build-passing-success?style=for-the-badge)](#)
-[![WASM](https://img.shields.io/badge/target-wasm32--unknown--unknown-blue?style=for-the-badge&logo=webassembly)](#)
-[![Rust](https://img.shields.io/badge/rust-1.80%2B-orange?style=for-the-badge&logo=rust)](#)
-[![License: MIT](https://img.shields.io/badge/License-MIT-magenta.svg?style=for-the-badge)](#)
+[![Build Status](https://img.shields.io/badge/Build-Passing-brightgreen?style=flat-square)](#)
+[![WASM](https://img.shields.io/badge/Target-Wasm32-blue?logo=webassembly&style=flat-square)](#)
+[![Rust](https://img.shields.io/badge/Language-Rust-orange?logo=rust&style=flat-square)](#)
+[![License: MIT](https://img.shields.io/badge/License-MIT-purple?style=flat-square)](#)
 
 </div>
 
@@ -21,72 +19,72 @@ Built on `barq-wasm` (SIMD compute) + `barq-vweb` (browser vector DB).
 
 ## ⚡ Overview
 
-**`barq-mesh-web`** is the browser-native distributed compute and execution layer for the Antigravity Agent Mesh. Using the processing horsepower of **WebAssembly (SIMD)** and **Web Workers**, it enables zero-server autonomous task routing, execution, verification, and contextual retrieval directly inside your browser tab.
+**`barq-mesh-web`** is a high-performance, purely browser-native distributed compute and execution layer. Built on WebAssembly (SIMD) and Web Workers, it empowers decentralized, zero-server autonomous task routing, executing, and vector-based semantic retrieval within the browser.
 
-It completely eliminates backend cloud dependence by bringing the entire AI Loop and Vector indexing natively to the edge.
+By pushing dense computation and AI loops natively to the network edge (the client's tab), it effectively minimizes backend infrastructure dependence.
 
 ### Key Capabilities
 
-* **Web Worker Pooling:** Fans out dense computation across multiple isolated Web Workers utilizing `ChannelBundle` via `MessageChannel`.
-* **Zero-Server RAG Engine:** Leverages `barq-vweb`'s highly optimized HNSW kNN + BM25 Hybrid engine inside WASM for robust document chunking and retrieval without an API call.
-* **SIMD Accelerated Verifications:** Every generated artifact runs through a local semantic verification (cosine similarity using `barq-wasm` SIMD core math instructions) before the Agent Loop exit-gates.
-* **Cross-Tab Topologies:** Uses `BroadcastChannel` for master/follower tab election resulting in safe OPFS (Origin Private File System) sync topologies.
-* **MCP Desktop Extensions:** Runs an embedded Model Context Protocol (MCP) tool server locally spanning JSON-RPC for external desktop IDE mapping.
+* **Web Worker Pooling**: Distributes dense execution across multiple isolated Web Workers via `ChannelBundle` and `MessageChannel` for optimal non-blocking performance.
+* **In-Browser RAG Engine**: Incorporates `barq-vweb` to deploy an optimized HNSW kNN + BM25 Hybrid index entirely in WASM, executing responsive chunking and document retrieval locally.
+* **SIMD Accelerated Verifications**: Every task output undergoes local semantic verification using robust cosine similarity evaluation natively powered by `barq-wasm` SIMD bindings.
+* **Cross-Tab Topologies**: Utilizes `BroadcastChannel` to connect tabs into peer computing nodes, enforcing master/follower topologies to prevent OPFS (Origin Private File System) sync deadlocks.
+* **MCP Integration**: Implements a native embedded **Model Context Protocol (MCP)** JSON-RPC server. Easily maps external IDE requests (e.g., VSCode, Cursor) directly to your local browser execution loop.
 
 ---
 
-## 🚀 Architecture and The 7 Phases
+## 🚀 Architecture
 
-This project was built methodically using an atomic Git commit workflow across 7 discrete architectural phases:
+The project maps complex backend LLM execution infrastructures into a lightweight edge agent structure over 7 distinct modules:
 
-### Phase 1: Core Foundation & OPFS Storage 🟢
-Established the core Rust scaffolding using `wasm-pack`. Integrated `barq-wasm` as a git dependency for SIMD routines and created the `BarqMeshWeb` facade for connecting `barq-vweb` Javascript dependencies natively into Rust.
+1. **Core Foundation & OPFS Storage**
+   Utilizes `wasm-pack` bridging `barq-wasm` (SIMD math) and `barq-vweb` into the central `BarqMeshWeb` rust interface.
 
-### Phase 2: Mesh Queue & Worker Pool 🟢
-Created `MeshQueue` offering dynamic deduplication using semantic verification alongside a massively parallel `WorkerPool` using cross-thread `MessageChannel`s targeting worker isolates.
+2. **Mesh Queue & Worker Pool**
+   Orchestration layer combining an intelligent `MeshQueue` capable of deduplication and a heavily parallelized `WorkerPool`.
 
-### Phase 3: Text Ingestion & Hybrid Search 🟢
-Bound high-level text ingestion directly to `barq-vweb` ONNX-MiniLM-v6 transformers. `retrieve_hybrid()` maps robust keyword and dense matching algorithm outputs mapped directly through Rust WASM boundaries. 
+3. **Text Ingestion & Hybrid Search**
+   Advanced offline retrieval implementing ONNX-MiniLM-v6 dense embeddings and BM25 sparse hybrid merging inside WASM memory boundaries.
 
-### Phase 4: Antigravity Agent Loop 🟢
-Orchestrated the core AI execution loop locally: `Planner` → `Executor` → `Verifier` → `Critic`. Implemented SIMD semantic validation (target >0.85 evaluation gate threshold). 
+4. **Agent Execution Loop**
+   Executes autonomous logic locally: `Planner` → `Executor` → `Verifier` → `Critic`. Requires a guaranteed >0.85 SIMD evaluation threshold.
 
-### Phase 5: LLM Router & Native Integrations 🟢
-Built `LlmRouter` enabling seamless dynamic prompt RAG-augmentation mapping to native browser offline deployments (WebLLM/Phi-3/Qwen2.5) gracefully falling back to Cloud API (OpenRouter).
+5. **LLM Router & Integrations**
+   Interfaces contexts natively with in-browser offline engines (WebLLM - Phi-3/Qwen) and elegantly dynamically falls back to Cloud APIs (OpenRouter).
 
-### Phase 6: Cross-Tab Mesh Distributed Computing 🟢
-Embedded `TopologyManager`. Maps tabs as distributed peer-to-peer compute nodes, electing singleton 'Leader' tabs via native Broadcast protocols reducing race conditions against browser OPFS persistence engines.
+6. **Cross-Tab Mesh Computations**
+   Orchestrates local tabs into unified distributed topologies utilizing reliable Browser-Broadcast algorithms.
 
-### Phase 7: MCP Server Native Mode 🟢
-Configured `McpServer`; parses, coordinates, and routes strict JSON-RPC payload requests. Exposes local web instances to desktop TCP proxy routers enabling cursor/vscode zero-friction RAG deployment.
+7. **MCP Server Mode**
+   An embedded tunnel serving `tools/list` and `tools/call` parsing direct TCP requests over the standard browser-native MCP configuration protocol.
 
 ---
 
-## 💻 Running the Application
+## 💻 Running Locally
 
-`barq-mesh-web` is built using standard Rust `wasm-pack` build tools.
+`barq-mesh-web` necessitates standard Rust WebAssembly toolchains for builds.
 
 ```bash
-# Compile and build the target library for WASM
+# Compile the target library for WebAssembly
 $ cargo build --target wasm32-unknown-unknown --release --features wasm
 ```
 
-### Examples
+### Demos & UI Interfaces
 
-The system components can be natively evaluated locally via `index.html` UX dashboards located iteratively in the `examples/` directory:
+A suite of interactive native web applications have been provided. Serve the repository root over a standard localized web server (e.g., using `python3 -m http.server`) to access the testing views:
 
-1. `examples/phase1_store/index.html` (Basic HNSW embedding indexing)
-2. `examples/phase2_mesh/index.html` (Web Worker queue routing validation)
-3. `examples/phase3_search/index.html` (RAG vector hybrid searching matrix)
-4. `examples/phase4_agents/index.html` (Agent Loop Validation threshold simulation)
-5. `examples/phase5_llm/index.html` (LlmRouter prompt injections mapping via AiMesh context)
-6. `examples/phase6_crosstab/index.html` (Multi-tab cluster topology election logic)
-7. `examples/phase7_mcp/index.html` (JSON-RPC MCP native browser tool integration loop)
+* `examples/phase1_store/index.html` — HNSW embedding logic.
+* `examples/phase2_mesh/index.html` — Worker pipeline deduplications.
+* `examples/phase3_search/index.html` — Hybrid search validation matrices.
+* `examples/phase4_agents/index.html` — The native autonomous execution sequence.
+* `examples/phase5_llm/index.html` — Offline/Online prompt RAG simulations.
+* `examples/phase6_crosstab/index.html` — Multi-tab election logic testbed.
+* `examples/phase7_mcp/index.html` — Embedded MCP JSON-RPC routing loop.
 
-Serve the directory utilizing a standard web server bridging appropriate browser headers *(Requires `Cross-Origin-Opener-Policy: same-origin` restrictions enabled to support explicit SharedArrayBuffers)*.
+> **Note**: For WebWorker shared memory boundaries, ensure proper `Cross-Origin-Opener-Policy: same-origin` restrictions are enabled on your test server to utilize `SharedArrayBuffer` correctly.
 
 ---
 
 <div align="center">
-<b>barq-mesh-web</b> • Antigravity Advanced Agentic Systems • 2026
+<i>Open Source under the MIT License</i>
 </div>
