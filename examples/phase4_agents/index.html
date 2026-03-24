@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Phase 4 — Antigravity Agent Loop | barq-mesh-web</title>
+  <style>
+    :root {
+      --bg:#0d0d14;--surface:#13131f;--border:#1e1e2e;
+      --accent:#7c3aed;--accent2:#06b6d4;--text:#e2e8f0;
+      --muted:#64748b;--success:#10b981;--warn:#f59e0b;--err:#ef4444;
+    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{background:var(--bg);color:var(--text);font-family:'Inter',system-ui,sans-serif;
+         padding:2rem;min-height:100vh}
+    h1{font-size:1.5rem;background:linear-gradient(135deg,var(--accent),var(--accent2));
+       -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:.5rem}
+    p.sub{color:var(--muted);font-size:.85rem;margin-bottom:1.5rem}
+    .card{background:var(--surface);border:1px solid var(--border);border-radius:12px;
+          padding:1.5rem;margin-bottom:1rem}
+    .card h2{font-size:1rem;margin-bottom:1rem;color:var(--accent2)}
+    .btn{background:var(--accent);color:#fff;border:none;border-radius:8px;
+         padding:.5rem 1.2rem;cursor:pointer;font-size:.9rem;transition:opacity .2s}
+    .btn:hover{opacity:.85} .btn:disabled{opacity:.45;cursor:default}
+    .log{font-family:monospace;font-size:.8rem;background:#090911;border-radius:8px;
+         padding:1rem;max-height:260px;overflow-y:auto;line-height:1.6;
+         border:1px solid var(--border);margin-top:.75rem}
+    .ok{color:var(--success)} .warn{color:var(--warn)} .err{color:var(--err)}
+    .pill{display:inline-block;padding:.2rem .7rem;border-radius:20px;
+          font-size:.75rem;border:1px solid var(--border);background:var(--surface);
+          color:var(--muted);margin-top:.5rem}
+    .row{display:flex;gap:.65rem;align-items:center;flex-wrap:wrap;margin-bottom:.75rem}
+    input[type=text]{background:#090911;border:1px solid var(--border);color:var(--text);
+        border-radius:6px;padding:.35rem .7rem;width:250px;font-size:.9rem}
+  </style>
+</head>
+<body>
+  <h1>Phase 4 — Antigravity Agent Loop</h1>
+  <p class="sub">
+    Executes a pure Rust WASM mock cycle: Planner → Executor → Verifier → Critic.
+    The VerifierAgent uses barq-wasm SIMD `cosine_similarity_simd` to score the step.
+  </p>
+
+  <div class="card">
+    <h2>Run Pipeline</h2>
+    <div class="row">
+      <input id="prompt-input" type="text" value="build a Rust WASM demo" />
+      <button class="btn" id="btn-run">Start Agents</button>
+    </div>
+    <div class="pill" id="pill-status">Idle</div>
+    <div class="log" id="log-agents">—</div>
+  </div>
+
+  <script type="module">
+    import init, { AiMesh } from "../../pkg/barq_mesh_web.js";
+
+    let getMeshPromise = null;
+
+    async function getMesh() {
+      if (getMeshPromise) return getMeshPromise;
+      getMeshPromise = (async () => {
+        await init();
+        return AiMesh.create(1, "phase4-agents", 384);
+      })();
+      return getMeshPromise;
+    }
+
+    function log(el, msg, cls = "") {
+      const line = document.createElement("div");
+      line.className = cls;
+      line.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
+      el.appendChild(line);
+      el.scrollTop = el.scrollHeight;
+    }
+
+    document.getElementById("btn-run").addEventListener("click", async () => {
+      const btn = document.getElementById("btn-run");
+      btn.disabled = true;
+      const el = document.getElementById("log-agents");
+      const pill = document.getElementById("pill-status");
+      el.innerHTML = "";
+      
+      try {
+        const mesh = await getMesh();
+        const prompt = document.getElementById("prompt-input").value;
+        pill.textContent = "Agent loop running...";
+        
+        log(el, `Spawning Antigravity Agent Loop for prompt: "${prompt}"`, "warn");
+        
+        const t0 = performance.now();
+        // Blocks until Critic is satisfied and Verifier scores > 0.85
+        const rawRes = await mesh.run_pipeline(prompt);
+        const ms = (performance.now() - t0).toFixed(2);
+        
+        const res = JSON.parse(rawRes);
+        
+        log(el, `Planner generated ${res.steps_planned} functional steps.`);
+        log(el, `Executor ran through ${res.retries} critic feedback cycles.`);
+        log(el, `Verifier SIMD Score output: ${res.final_score.toFixed(4)}.`);
+        
+        if (res.success && res.final_score >= 0.85) {
+           log(el, `🎯 Exit gate: Agent loop passed SIMD proof-of-work (score > 0.85) in ${ms}ms ✅`, "ok");
+           log(el, `Final Artifact: ${res.output}`, "ok");
+           pill.textContent = "Agent cycle complete ✅";
+        } else {
+           log(el, `Agent cycle failed to reach target score.`, "err");
+        }
+      } catch (e) { 
+        log(el, `❌ ${e}`, "err"); 
+        pill.textContent = "Error";
+      } finally { 
+        btn.disabled = false; 
+      }
+    });
+  </script>
+</body>
+</html>
