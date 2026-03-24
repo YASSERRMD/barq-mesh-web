@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>barq-mesh-web — Browser AI Agent Mesh</title>
+  <meta name="description" content="Browser-native, zero-server distributed AI agent mesh powered by Rust/WASM, barq-wasm SIMD compute, and barq-vweb vector DB." />
+  <style>
+    :root {
+      --bg: #0d0d14;
+      --surface: #13131f;
+      --border: #1e1e2e;
+      --accent: #7c3aed;
+      --accent2: #06b6d4;
+      --text: #e2e8f0;
+      --muted: #64748b;
+      --success: #10b981;
+      --warn: #f59e0b;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', system-ui, sans-serif;
+      min-height: 100vh;
+      padding: 2rem;
+    }
+    header {
+      text-align: center;
+      margin-bottom: 2.5rem;
+    }
+    header h1 {
+      font-size: 2rem;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: .5rem;
+    }
+    header p { color: var(--muted); font-size: .9rem; }
+    nav {
+      display: flex;
+      gap: .75rem;
+      justify-content: center;
+      margin-bottom: 2rem;
+      flex-wrap: wrap;
+    }
+    nav a {
+      padding: .4rem 1rem;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      text-decoration: none;
+      font-size: .85rem;
+      transition: all .2s;
+    }
+    nav a:hover { border-color: var(--accent); color: var(--accent); }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>barq-mesh-web</h1>
+    <p>Browser-native · Zero-server · Rust/WASM · Distributed AI Agent Mesh</p>
+  </header>
+  <nav>
+    <a href="examples/phase1_store/index.html">Phase 1 — Store</a>
+    <a href="examples/phase2_mesh/index.html">Phase 2 — Mesh</a>
+    <a href="examples/phase3_search/index.html">Phase 3 — Search</a>
+    <a href="examples/phase4_agents/index.html">Phase 4 — Agents</a>
+    <a href="examples/phase5_llm/index.html">Phase 5 — LLM</a>
+    <a href="examples/phase6_crosstab/index.html">Phase 6 — Cross-Tab</a>
+  </nav>
+</body>
+</html>
