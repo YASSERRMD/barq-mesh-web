@@ -29,3 +29,5 @@ pub use store::barq_vweb_store::BarqMeshWeb;
 pub use mesh::aimesh::AiMesh;
 #[cfg(feature = "wasm")]
 pub use llm::inference::LlmRouter;
+#[cfg(feature = "wasm")]
+pub use mesh::topology::TopologyManager;
