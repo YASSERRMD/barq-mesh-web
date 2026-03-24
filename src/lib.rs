@@ -23,3 +23,5 @@ pub fn wasm_start() {
 // ── Top-level re-exports so JS sees BarqMeshWeb directly ──────────────────
 #[cfg(feature = "wasm")]
 pub use store::barq_vweb_store::BarqMeshWeb;
+#[cfg(feature = "wasm")]
+pub use mesh::aimesh::AiMesh;

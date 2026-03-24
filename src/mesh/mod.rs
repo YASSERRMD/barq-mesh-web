@@ -5,3 +5,4 @@ pub mod types;
 pub mod queue;
 pub mod bus;
 pub mod pool;
+pub mod aimesh;
