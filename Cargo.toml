@@ -2,7 +2,7 @@
 name = "barq-mesh-web"
 version = "0.1.0"
 edition = "2021"
-description = "Browser-native distributed AI agent mesh — Rust/WASM"
+description = "Browser-native distributed AI agent mesh - Rust/WASM"
 license = "MIT"
 
 [lib]
@@ -22,7 +22,7 @@ wasm = [
 ]
 
 [dependencies]
-# SIMD compute — Rust git dep
+# SIMD compute - Rust git dep
 barq-wasm = { git = "https://github.com/YASSERRMD/barq-wasm", default-features = false }
 
 # WASM / browser

@@ -1,6 +1,6 @@
-// worker.js — barq-mesh-web Web Worker bootstrap
+// worker.js - barq-mesh-web Web Worker bootstrap
 // Phase 2 entry point; loaded by WorkerPool for each spawned worker.
-// This file is intentionally minimal — all logic lives in Rust (worker/entry.rs).
+// This file is intentionally minimal - all logic lives in Rust (worker/entry.rs).
 
 import init, { worker_entry_point } from "./pkg/barq_mesh_web.js";
 

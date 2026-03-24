@@ -1,4 +1,4 @@
-# barq-mesh-web — Architecture
+# barq-mesh-web - Architecture
 
 ## Overview
 

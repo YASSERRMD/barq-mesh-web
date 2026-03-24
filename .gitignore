@@ -1,1 +1,3 @@
-.agents/
+/target/
+pkg/
+.DS_Store

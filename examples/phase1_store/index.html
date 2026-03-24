@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Phase 1 — Store Smoke Test | barq-mesh-web</title>
+  <title>Phase 1 - Store Smoke Test | barq-mesh-web</title>
   <meta name="description" content="Phase 1 smoke test: insert 100 × 384-dim vectors, run kNN top-5, verify barq-wasm SIMD normalisation pipeline." />
   <style>
     :root {
@@ -37,14 +37,14 @@
   </style>
 </head>
 <body>
-  <h1>Phase 1 — Store Smoke Test</h1>
+  <h1>Phase 1 - Store Smoke Test</h1>
   <p class="sub">
     Inserts N × 384-dim random vectors through the <strong>barq-wasm → barq-vweb</strong> pipeline,
     then runs a kNN search. Verifies SIMD normalisation + HNSW indexing work end-to-end.
   </p>
 
   <div class="card">
-    <h2>1 — Insert vectors</h2>
+    <h2>1 - Insert vectors</h2>
     <div class="row">
       <label>Count <input id="count" type="number" value="100" min="1" max="1000" /></label>
       <label>Dim <input id="dim" type="number" value="384" min="2" max="1024" readonly /></label>
@@ -56,18 +56,18 @@
   </div>
 
   <div class="card">
-    <h2>2 — kNN search (top-k)</h2>
+    <h2>2 - kNN search (top-k)</h2>
     <div class="row">
       <label>k <input id="topk" type="number" value="5" min="1" max="20" /></label>
       <button class="btn" id="btn-search">Generate query &amp; search</button>
     </div>
-    <div class="log" id="log-search">—</div>
+    <div class="log" id="log-search">-</div>
   </div>
 
   <div class="card">
-    <h2>3 — Backend info &amp; embedding stats</h2>
+    <h2>3 - Backend info &amp; embedding stats</h2>
     <button class="btn" id="btn-info">Get backend info</button>
-    <div class="log" id="log-info">—</div>
+    <div class="log" id="log-info">-</div>
   </div>
 
   <script type="module">
@@ -102,7 +102,7 @@
       log(logInsert, "Initialising barq-mesh-web WASM…");
       await init();
       mesh = new BarqMeshWeb("phase1-smoke", DIM);
-      log(logInsert, `✅ WASM ready. Collection: ${mesh.collection_name()}, dim: ${mesh.dim()}`, "ok");
+      log(logInsert, ` WASM ready. Collection: ${mesh.collection_name()}, dim: ${mesh.dim()}`, "ok");
       return mesh;
     }
 
@@ -139,9 +139,9 @@
         const total = await m.upsert_vectors(Array.from(flat), Array.from(ids));
         const ms    = (performance.now() - t0).toFixed(1);
         pillCount.textContent = `${total} vectors indexed`;
-        log(logInsert, `✅ Inserted ${n} vectors in ${ms} ms. Total: ${total}`, "ok");
+        log(logInsert, ` Inserted ${n} vectors in ${ms} ms. Total: ${total}`, "ok");
       } catch (e) {
-        log(logInsert, `❌ ${e}`, "err");
+        log(logInsert, ` ${e}`, "err");
       } finally { btn.disabled = false; }
     });
 
@@ -152,8 +152,8 @@
         await m.clear();
         mesh = null;
         pillCount.textContent = "0 vectors indexed";
-        log(logInsert, "✅ Collection cleared.", "ok");
-      } catch (e) { log(logInsert, `❌ ${e}`, "err"); }
+        log(logInsert, " Collection cleared.", "ok");
+      } catch (e) { log(logInsert, ` ${e}`, "err"); }
     });
 
     // ── Search ─────────────────────────────────────────────────────────────
@@ -171,17 +171,17 @@
         const ms  = (performance.now() - t0).toFixed(2);
         const results = JSON.parse(raw);
         if (!results?.length) {
-          log(logSearch, "No results — insert vectors first.", "warn");
+          log(logSearch, "No results - insert vectors first.", "warn");
         } else {
           log(logSearch, `Top-${results.length} results in ${ms} ms:`, "ok");
           results.forEach((r, i) => {
             log(logSearch, `  #${i + 1}  id=${r.id}  score=${r.score.toFixed(4)}`);
           });
           if (parseFloat(ms) < 5) {
-            log(logSearch, `🎯 Exit gate: latency (${ms} ms) < 5 ms ✅`, "ok");
+            log(logSearch, ` Exit gate: latency (${ms} ms) < 5 ms `, "ok");
           }
         }
-      } catch (e) { log(logSearch, `❌ ${e}`, "err"); }
+      } catch (e) { log(logSearch, ` ${e}`, "err"); }
       finally { btn.disabled = false; }
     });
 
@@ -195,8 +195,8 @@
         const stats = JSON.parse(m.embedding_stats(dummy));
         log(logInfo, `Backend: ${info}`, "ok");
         log(logInfo, `Embedding stats (384-dim random): mean=${stats.mean.toFixed(4)}  std=${stats.std_dev.toFixed(4)}  norm=${stats.norm.toFixed(4)}`);
-        log(logInfo, `barq-wasm SIMD pipeline: vector_normalize → vector_norm_simd → mean → std_dev ✅`, "ok");
-      } catch (e) { log(logInfo, `❌ ${e}`, "err"); }
+        log(logInfo, `barq-wasm SIMD pipeline: vector_normalize → vector_norm_simd → mean → std_dev `, "ok");
+      } catch (e) { log(logInfo, ` ${e}`, "err"); }
     });
   </script>
 </body>

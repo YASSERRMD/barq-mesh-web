@@ -1,4 +1,4 @@
-# barq-mesh-web — Public API Reference
+# barq-mesh-web - Public API Reference
 
 ## JavaScript / TypeScript API (wasm-bindgen)
 

@@ -1,7 +1,7 @@
-# barq-mesh-web — Phases
+# barq-mesh-web - Phases
 
-## Phase 1 — Core Foundation
-**Status:** ✅ Implemented
+## Phase 1 - Core Foundation
+**Status:**  Implemented
 
 Scaffolds the project. Wires `barq-wasm` and `barq-vweb` together.
 Basic vector insert and kNN search in the browser.
@@ -13,7 +13,7 @@ Basic vector insert and kNN search in the browser.
 
 ---
 
-## Phase 2 — Mesh Queue + Worker Pool
+## Phase 2 - Mesh Queue + Worker Pool
 **Status:** ⏳ Planned
 
 Rust spawns N Web Workers. `MeshQueue` fans tasks out by priority.
@@ -26,7 +26,7 @@ Semantic dedup via barq-vweb + barq-wasm rejects near-duplicates.
 
 ---
 
-## Phase 3 — Text Ingestion + Hybrid Search
+## Phase 3 - Text Ingestion + Hybrid Search
 **Status:** ⏳ Planned
 
 `insert_texts` → MiniLM-L6-v2 → HNSW + BM25.
@@ -40,7 +40,7 @@ OPFS save/load persists across reloads.
 
 ---
 
-## Phase 4 — Antigravity Agent Loop
+## Phase 4 - Antigravity Agent Loop
 **Status:** ⏳ Planned
 
 Full **Plan → Execute → Verify → Critic** loop in Rust.
@@ -54,7 +54,7 @@ Every agent action produces a typed `Artifact` stored in barq-vweb.
 
 ---
 
-## Phase 5 — LLM Integration
+## Phase 5 - LLM Integration
 **Status:** ⏳ Planned
 
 WebLLM (offline: Phi-3/Qwen2.5) + OpenRouter (online).
@@ -67,7 +67,7 @@ barq-wasm verifies every LLM output semantically.
 
 ---
 
-## Phase 6 — Cross-Tab Mesh + OPFS Persistence
+## Phase 6 - Cross-Tab Mesh + OPFS Persistence
 **Status:** ⏳ Planned
 
 Multiple browser tabs form a distributed mesh via `BroadcastChannel`.
@@ -79,7 +79,7 @@ All tabs share the same HNSW index state through OPFS.
 
 ---
 
-## Phase 7 — MCP Server + Dashboard
+## Phase 7 - MCP Server + Dashboard
 **Status:** ⏳ Planned
 
 Service Worker exposes MCP JSON-RPC on `/mcp/*`.

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Phase 3 — Text Ingestion & Hybrid Search | barq-mesh-web</title>
+  <title>Phase 3 - Text Ingestion & Hybrid Search | barq-mesh-web</title>
   <style>
     :root {
       --bg:#0d0d14;--surface:#13131f;--border:#1e1e2e;
@@ -35,14 +35,14 @@
   </style>
 </head>
 <body>
-  <h1>Phase 3 — Text Ingestion & Hybrid Search</h1>
+  <h1>Phase 3 - Text Ingestion & Hybrid Search</h1>
   <p class="sub">
     Wraps the core logic inside <strong>AiMesh</strong>, instantiating the worker pool and 
     exposing ingest_texts (MiniLM ONNX) and retrieve_hybrid (BM25 + HNSW RRF) capabilities.
   </p>
 
   <div class="card">
-    <h2>1 — Ingest Texts</h2>
+    <h2>1 - Ingest Texts</h2>
     <div class="row">
       <button class="btn" id="btn-ingest">Ingest Knowledge Base</button>
       <button class="btn btn-sm" id="btn-clear" style="background:transparent;border:1px solid var(--border);color:var(--muted)">Clear</button>
@@ -52,21 +52,21 @@
   </div>
 
   <div class="card">
-    <h2>2 — Hybrid Search (BM25 + HNSW kNN)</h2>
+    <h2>2 - Hybrid Search (BM25 + HNSW kNN)</h2>
     <div class="row">
       <input id="query-input" type="text" value="fast browser database" />
       <button class="btn" id="btn-search">Search</button>
     </div>
-    <div class="log" id="log-search">—</div>
+    <div class="log" id="log-search">-</div>
   </div>
 
   <div class="card">
-    <h2>3 — OPFS Persistence</h2>
+    <h2>3 - OPFS Persistence</h2>
     <div class="row">
       <button class="btn" id="btn-save">Persist to OPFS</button>
       <button class="btn" id="btn-load">Restore from OPFS</button>
     </div>
-    <div class="log" id="log-opfs">—</div>
+    <div class="log" id="log-opfs">-</div>
   </div>
 
   <script type="module">
@@ -91,7 +91,7 @@
         log(document.getElementById("log-ingest"), "Initialising AiMesh WASM module (2 workers)…");
         await init();
         const mesh = AiMesh.create(2, "phase3-hybrid", 384);
-        log(document.getElementById("log-ingest"), `✅ AiMesh ready. Backend: ${mesh.backend()}`, "ok");
+        log(document.getElementById("log-ingest"), ` AiMesh ready. Backend: ${mesh.backend()}`, "ok");
         document.getElementById("pill-count").textContent = `${mesh.vector_count()} chunks indexed`;
         return mesh;
       })();
@@ -120,8 +120,8 @@
         const ms = (performance.now() - t0).toFixed(0);
 
         document.getElementById("pill-count").textContent = `${total} chunks indexed`;
-        log(el, `✅ Embedded ${MOCK_CORPUS.length} chunks into BM25 + HNSW in ${ms} ms.`, "ok");
-      } catch (e) { log(document.getElementById("log-ingest"), `❌ ${e}`, "err"); }
+        log(el, ` Embedded ${MOCK_CORPUS.length} chunks into BM25 + HNSW in ${ms} ms.`, "ok");
+      } catch (e) { log(document.getElementById("log-ingest"), ` ${e}`, "err"); }
       finally { btn.disabled = false; }
     });
 
@@ -152,7 +152,7 @@
           log(el, `  #${i + 1}  [score=${r.score.toFixed(4)}] ${textExcerpt}`);
         });
 
-      } catch (e) { log(el, `❌ ${e}`, "err"); }
+      } catch (e) { log(el, ` ${e}`, "err"); }
       finally { btn.disabled = false; }
     });
 
@@ -163,8 +163,8 @@
         const mesh = await getMesh();
         log(el, "Saving to OPFS...");
         const res = await mesh.persist();
-        log(el, `✅ OPFS save complete: ${res}`, "ok");
-      } catch (e) { log(el, `❌ ${e}`, "err"); }
+        log(el, ` OPFS save complete: ${res}`, "ok");
+      } catch (e) { log(el, ` ${e}`, "err"); }
     });
 
     document.getElementById("btn-load").addEventListener("click", async () => {
@@ -173,9 +173,9 @@
         const mesh = await getMesh();
         log(el, "Restoring from OPFS...");
         const res = await mesh.restore();
-        log(el, `✅ OPFS load complete: ${res}`, "ok");
+        log(el, ` OPFS load complete: ${res}`, "ok");
         document.getElementById("pill-count").textContent = `${mesh.vector_count()} chunks indexed`;
-      } catch (e) { log(el, `❌ ${e}`, "err"); }
+      } catch (e) { log(el, ` ${e}`, "err"); }
     });
 
     // ── Clear ──────────────────────────────────────────────────────────────
@@ -184,9 +184,9 @@
       try {
         const mesh = await getMesh();
         await mesh.clear();
-        log(el, "✅ Memory cleared.", "ok");
+        log(el, " Memory cleared.", "ok");
         document.getElementById("pill-count").textContent = `${mesh.vector_count()} chunks indexed`;
-      } catch (e) { log(el, `❌ ${e}`, "err"); }
+      } catch (e) { log(el, ` ${e}`, "err"); }
     });
 
   </script>

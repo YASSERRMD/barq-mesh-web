@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Phase 6 — Cross-Tab Mesh | barq-mesh-web</title>
+  <title>Phase 6 - Cross-Tab Mesh | barq-mesh-web</title>
   <style>
     :root {
       --bg:#0d0d14;--surface:#13131f;--border:#1e1e2e;
@@ -33,14 +33,14 @@
   </style>
 </head>
 <body>
-  <h1>Phase 6 — Cross-Tab Mesh & OPFS Distribution</h1>
+  <h1>Phase 6 - Cross-Tab Mesh & OPFS Distribution</h1>
   <p class="sub">
     Uses <code>TopologyManager</code> via BroadcastChannel to elect a Leader.
     Only the Leader can execute OPFS Sync saves. Open this page in multiple tabs to see context sharing.
   </p>
 
   <div class="card">
-    <h2>1 — Node Topology</h2>
+    <h2>1 - Node Topology</h2>
     <div class="row">
       <button class="btn" id="btn-spawn">Start Topology Node</button>
       <button class="btn" id="btn-claim">Claim OPFS Leadership</button>
@@ -76,7 +76,7 @@
         log(el, `Started Topology Node [${id}] (Passive)`, "ok");
         log(el, `Listening for BroadcastChannel events...`, "warn");
       } catch (e) {
-        log(el, `❌ ${e}`, "err");
+        log(el, ` ${e}`, "err");
         btn.disabled = false;
       }
     });
@@ -93,13 +93,13 @@
        
        setTimeout(() => {
            if (topology.is_leader()) {
-               document.getElementById("pill-leader").textContent = "Node: ACTIVE LEADER 👑";
+               document.getElementById("pill-leader").textContent = "Node: ACTIVE LEADER ";
                document.getElementById("pill-leader").style.borderColor = "var(--warn)";
                document.getElementById("pill-leader").style.color = "var(--warn)";
                document.getElementById("btn-save").disabled = false;
-               log(el, "✅ Leadership established. OPFS Save enabled.");
+               log(el, " Leadership established. OPFS Save enabled.");
            } else {
-               log(el, "❌ Valid Claim Received from another node. Stepped down.", "err");
+               log(el, " Valid Claim Received from another node. Stepped down.", "err");
            }
        }, 500);
     });
@@ -112,7 +112,7 @@
        }
        log(el, "Triggering AiMesh.persist() to OPFS as LEADER...", "warn");
        const res = await mesh.persist();
-       log(el, `✅ OPFS Sync: ${res}`, "ok");
+       log(el, ` OPFS Sync: ${res}`, "ok");
     });
   </script>
 </body>

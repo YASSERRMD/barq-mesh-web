@@ -1,11 +1,6 @@
-#!/usr/bin/env bash
+#!/bin/bash
 set -e
 
-echo "🔨  Building barq-mesh-web WASM package..."
-wasm-pack build \
-    --target web \
-    --out-dir pkg \
-    --features wasm \
-    -- -Z build-std=panic_abort,std
-
-echo "✅  Done — output in ./pkg"
+echo "Building barq-mesh-web for WebAssembly..."
+cargo build --target wasm32-unknown-unknown --release --features wasm
+echo "Build complete."

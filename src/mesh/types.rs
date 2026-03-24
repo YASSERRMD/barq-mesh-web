@@ -1,4 +1,4 @@
-//! Phase 1 — Core type definitions for the AI mesh.
+//! Phase 1 - Core type definitions for the AI mesh.
 //!
 //! These types are shared across phases; later phases will extend the
 //! `TaskPayload` enum and add new variants without breaking existing code.
@@ -92,11 +92,11 @@ pub enum Artifact {
     Proof { score: f32, passed: bool },
 }
 
-// ── TaskPayload — extended per phase ──────────────────────────────────────
+// ── TaskPayload - extended per phase ──────────────────────────────────────
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum TaskPayload {
-    // Phase 1 — basic raw vector ops
+    // Phase 1 - basic raw vector ops
     RawVector { data: Vec<f32> },
     RawBytes { data: Vec<u8> },
     // Phase 2 additions (declared early so mesh/queue.rs compiles cleanly)

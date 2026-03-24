@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Phase 5 — LLM Integration & RAG | barq-mesh-web</title>
+  <title>Phase 5 - LLM Integration & RAG | barq-mesh-web</title>
   <style>
     :root {
       --bg:#0d0d14;--surface:#13131f;--border:#1e1e2e;
@@ -32,14 +32,14 @@
   </style>
 </head>
 <body>
-  <h1>Phase 5 — LLM Integration & RAG</h1>
+  <h1>Phase 5 - LLM Integration & RAG</h1>
   <p class="sub">
     Uses <strong>LlmRouter</strong> to inject RAG context into prompts via AiMesh.
     Then verifies LLM outputs using semantic vectors via barq-wasm SIMD dot products.
   </p>
 
   <div class="card">
-    <h2>1 — Ingest RAG Knowledge</h2>
+    <h2>1 - Ingest RAG Knowledge</h2>
     <div class="row">
       <button class="btn" id="btn-ingest">Ingest Mock Documentation</button>
     </div>
@@ -47,12 +47,12 @@
   </div>
 
   <div class="card">
-    <h2>2 — Ask LLM (WebLLM Mock)</h2>
+    <h2>2 - Ask LLM (WebLLM Mock)</h2>
     <div class="row">
       <input id="prompt-input" type="text" value="How is persistence achieved?" />
       <button class="btn" id="btn-ask">Request RAG Prompt & Run LLM</button>
     </div>
-    <div class="log" id="log-llm">—</div>
+    <div class="log" id="log-llm">-</div>
   </div>
 
   <script type="module">
@@ -95,8 +95,8 @@
         
         await mesh.ingest_texts(JSON.stringify(MOCK_CORPUS));
         
-        log(el, `✅ Embedded and Indexed. Total contexts: ${mesh.vector_count()}`, "ok");
-      } catch (e) { log(document.getElementById("log-ingest"), `❌ ${e}`, "err"); }
+        log(el, ` Embedded and Indexed. Total contexts: ${mesh.vector_count()}`, "ok");
+      } catch (e) { log(document.getElementById("log-ingest"), ` ${e}`, "err"); }
       finally { btn.disabled = false; }
     });
 
@@ -131,15 +131,15 @@
              JSON.stringify(Array.from(actual))
           );
           
-          log(el, `🎯 SIMD Cosine Verifier Output Score: ${score.toFixed(4)}`, "ok");
+          log(el, ` SIMD Cosine Verifier Output Score: ${score.toFixed(4)}`, "ok");
           if(score >= 0.85) {
-             log(el, `✅ RAG Cycle verified. Validated by LLM feedback mesh.`, "ok");
+             log(el, ` RAG Cycle verified. Validated by LLM feedback mesh.`, "ok");
           }
 
           btn.disabled = false;
         }, 1200);
 
-      } catch (e) { log(el, `❌ ${e}`, "err"); btn.disabled = false; }
+      } catch (e) { log(el, ` ${e}`, "err"); btn.disabled = false; }
     });
 
   </script>

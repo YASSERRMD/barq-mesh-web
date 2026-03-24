@@ -51,7 +51,7 @@ fn run_task(task: &AiMeshTask) -> AiMeshResult {
     let mut error = None;
 
     match &task.payload {
-        // Phase 1 — basic (no worker needed for these but included for completeness)
+        // Phase 1 - basic (no worker needed for these but included for completeness)
         TaskPayload::RawVector { data } => {
             let norm = vector_normalize(data);
             output = serde_json::json!({ "normalised": norm });

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Phase 7 — MCP Server Integration | barq-mesh-web</title>
+  <title>Phase 7 - MCP Server Integration | barq-mesh-web</title>
   <style>
     :root {
       --bg:#0d0d14;--surface:#13131f;--border:#1e1e2e;
@@ -30,14 +30,14 @@
   </style>
 </head>
 <body>
-  <h1>Phase 7 — MCP Server Mode</h1>
+  <h1>Phase 7 - MCP Server Mode</h1>
   <p class="sub">
     Exposes <code>McpServer</code> which provides JSON-RPC logic to interact with AiMesh.
     This allows a local proxy to export the Browser Context to standard MCP Desktop clients (Cursor / VSCode).
   </p>
 
   <div class="card">
-    <h2>1 — Simulated JSON-RPC MCP Requests</h2>
+    <h2>1 - Simulated JSON-RPC MCP Requests</h2>
     <div class="row">
       <button class="btn" id="btn-list">Send tools/list Request</button>
       <button class="btn" id="btn-call">Send tools/call (barq_run_agent) Request</button>
@@ -84,7 +84,7 @@
         const resStr = await srv.handle_request(reqStr);
         log(el, `<< RES: ${JSON.stringify(JSON.parse(resStr), null, 2)}`, "ok");
       } catch (e) {
-        log(el, `❌ ${e}`, "err");
+        log(el, ` ${e}`, "err");
       } finally {
         btn.disabled = false;
       }
@@ -116,7 +116,7 @@
          const resStr = await srv.handle_request(reqStr);
          log(el, `<< RES:\n${JSON.stringify(JSON.parse(resStr), null, 2)}`, "ok");
        } catch (e) {
-         log(el, `❌ ${e}`, "err");
+         log(el, ` ${e}`, "err");
        } finally { 
          btn.disabled = false;
        }
