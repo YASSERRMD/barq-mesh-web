@@ -90,6 +90,13 @@ impl AiMesh {
         self.pool.get_stats()
     }
 
+    /// Run the Antigravity Agent loop (Planner -> Executor -> Verifier -> Critic)
+    #[wasm_bindgen]
+    pub async fn run_pipeline(&self, prompt: String) -> Result<String, JsValue> {
+        let result = crate::agents::pipeline::run_agent_pipeline(prompt).await?;
+        Ok(serde_json::to_string(&result).unwrap_or_default())
+    }
+
     #[wasm_bindgen]
     pub async fn shutdown(&self) -> Result<(), JsValue> {
         // Shutdown pool if required
