@@ -10,6 +10,7 @@ use wasm_bindgen::prelude::*;
 
 pub mod mesh;
 pub mod store;
+pub mod worker;
 
 /// Called automatically when the WASM module is instantiated.
 /// Sets up the panic hook so Rust panics surface in the browser console.
