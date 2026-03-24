@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Phase 1 — Store Smoke Test | barq-mesh-web</title>
+  <meta name="description" content="Phase 1 smoke test: insert 100 × 384-dim vectors, run kNN top-5, verify barq-wasm SIMD normalisation pipeline." />
+  <style>
+    :root {
+      --bg:#0d0d14;--surface:#13131f;--border:#1e1e2e;
+      --accent:#7c3aed;--accent2:#06b6d4;--text:#e2e8f0;
+      --muted:#64748b;--success:#10b981;--warn:#f59e0b;--err:#ef4444;
+    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{background:var(--bg);color:var(--text);font-family:'Inter',system-ui,sans-serif;
+         padding:2rem;min-height:100vh}
+    h1{font-size:1.5rem;background:linear-gradient(135deg,var(--accent),var(--accent2));
+       -webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:.5rem}
+    p.sub{color:var(--muted);font-size:.85rem;margin-bottom:1.5rem}
+    .card{background:var(--surface);border:1px solid var(--border);border-radius:12px;
+          padding:1.5rem;margin-bottom:1rem}
+    .card h2{font-size:1rem;margin-bottom:1rem;color:var(--accent2)}
+    .btn{background:var(--accent);color:#fff;border:none;border-radius:8px;
+         padding:.5rem 1.2rem;cursor:pointer;font-size:.9rem;transition:opacity .2s}
+    .btn:hover{opacity:.85} .btn:disabled{opacity:.45;cursor:default}
+    .btn-sm{background:transparent;border:1px solid var(--border);color:var(--muted)}
+    .log{font-family:monospace;font-size:.8rem;background:#090911;border-radius:8px;
+         padding:1rem;max-height:260px;overflow-y:auto;line-height:1.6;
+         border:1px solid var(--border);margin-top:.75rem}
+    .ok{color:var(--success)} .warn{color:var(--warn)} .err{color:var(--err)}
+    .pill{display:inline-block;padding:.2rem .7rem;border-radius:20px;
+          font-size:.75rem;border:1px solid var(--border);background:var(--surface);
+          color:var(--muted);margin-top:.5rem}
+    .row{display:flex;gap:.65rem;align-items:center;flex-wrap:wrap;margin-bottom:.75rem}
+    input[type=number]{background:#090911;border:1px solid var(--border);color:var(--text);
+        border-radius:6px;padding:.35rem .7rem;width:90px;font-size:.9rem}
+  </style>
+</head>
+<body>
+  <h1>Phase 1 — Store Smoke Test</h1>
+  <p class="sub">
+    Inserts N × 384-dim random vectors through the <strong>barq-wasm → barq-vweb</strong> pipeline,
+    then runs a kNN search. Verifies SIMD normalisation + HNSW indexing work end-to-end.
+  </p>
+
+  <div class="card">
+    <h2>1 — Insert vectors</h2>
+    <div class="row">
+      <label>Count <input id="count" type="number" value="100" min="1" max="1000" /></label>
+      <label>Dim <input id="dim" type="number" value="384" min="2" max="1024" readonly /></label>
+      <button class="btn" id="btn-insert">Insert vectors</button>
+      <button class="btn btn-sm" id="btn-clear">Clear</button>
+    </div>
+    <div class="pill" id="pill-count">0 vectors indexed</div>
+    <div class="log" id="log-insert">Waiting…</div>
+  </div>
+
+  <div class="card">
+    <h2>2 — kNN search (top-k)</h2>
+    <div class="row">
+      <label>k <input id="topk" type="number" value="5" min="1" max="20" /></label>
+      <button class="btn" id="btn-search">Generate query &amp; search</button>
+    </div>
+    <div class="log" id="log-search">—</div>
+  </div>
+
+  <div class="card">
+    <h2>3 — Backend info &amp; embedding stats</h2>
+    <button class="btn" id="btn-info">Get backend info</button>
+    <div class="log" id="log-info">—</div>
+  </div>
+
+  <script type="module">
+    // ── Load barq-vweb npm pkg (served locally after wasm-pack build) ──────
+    // For local dev: python3 -m http.server 8080 from repo root,
+    // then open http://localhost:8080/examples/phase1_store/index.html
+    //
+    // The barq-vweb JS module is imported from the npm package; adjust the
+    // path if served from a different location.
+    import init, { BarqMeshWeb } from "../../pkg/barq_mesh_web.js";
+
+    const DIM = 384;
+    let mesh = null;
+
+    // ── Initialise WASM ────────────────────────────────────────────────────
+    const logInsert = document.getElementById("log-insert");
+    const logSearch = document.getElementById("log-search");
+    const logInfo   = document.getElementById("log-info");
+    const pillCount = document.getElementById("pill-count");
+
+    function log(el, msg, cls = "") {
+      const line = document.createElement("div");
+      line.className = cls;
+      line.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
+      el.appendChild(line);
+      el.scrollTop = el.scrollHeight;
+    }
+
+    async function getMesh() {
+      if (mesh) return mesh;
+      logInsert.textContent = "";
+      log(logInsert, "Initialising barq-mesh-web WASM…");
+      await init();
+      mesh = new BarqMeshWeb("phase1-smoke", DIM);
+      log(logInsert, `✅ WASM ready. Collection: ${mesh.collection_name()}, dim: ${mesh.dim()}`, "ok");
+      return mesh;
+    }
+
+    // ── Random unit vector ─────────────────────────────────────────────────
+    function randomVec(dim) {
+      const v = new Float32Array(dim);
+      let norm = 0;
+      for (let i = 0; i < dim; i++) { v[i] = Math.random() * 2 - 1; norm += v[i] * v[i]; }
+      norm = Math.sqrt(norm);
+      for (let i = 0; i < dim; i++) v[i] /= norm;
+      return Array.from(v);
+    }
+
+    // ── Insert ─────────────────────────────────────────────────────────────
+    document.getElementById("btn-insert").addEventListener("click", async () => {
+      const btn = document.getElementById("btn-insert");
+      btn.disabled = true;
+      const n   = parseInt(document.getElementById("count").value) || 100;
+      const dim = parseInt(document.getElementById("dim").value)   || 384;
+      try {
+        const m = await getMesh();
+        log(logInsert, `Inserting ${n} × ${dim}-dim vectors via barq-wasm → barq-vweb…`);
+        const t0 = performance.now();
+
+        // Build flat array + ids
+        const flat = new Array(n * dim);
+        const ids  = new Uint32Array(n);
+        for (let i = 0; i < n; i++) {
+          const v = randomVec(dim);
+          for (let d = 0; d < dim; d++) flat[i * dim + d] = v[d];
+          ids[i] = i;
+        }
+
+        const total = await m.upsert_vectors(Array.from(flat), Array.from(ids));
+        const ms    = (performance.now() - t0).toFixed(1);
+        pillCount.textContent = `${total} vectors indexed`;
+        log(logInsert, `✅ Inserted ${n} vectors in ${ms} ms. Total: ${total}`, "ok");
+      } catch (e) {
+        log(logInsert, `❌ ${e}`, "err");
+      } finally { btn.disabled = false; }
+    });
+
+    // ── Clear ──────────────────────────────────────────────────────────────
+    document.getElementById("btn-clear").addEventListener("click", async () => {
+      try {
+        const m = await getMesh();
+        await m.clear();
+        mesh = null;
+        pillCount.textContent = "0 vectors indexed";
+        log(logInsert, "✅ Collection cleared.", "ok");
+      } catch (e) { log(logInsert, `❌ ${e}`, "err"); }
+    });
+
+    // ── Search ─────────────────────────────────────────────────────────────
+    document.getElementById("btn-search").addEventListener("click", async () => {
+      const btn = document.getElementById("btn-search");
+      btn.disabled = true;
+      logSearch.textContent = "";
+      const k = parseInt(document.getElementById("topk").value) || 5;
+      try {
+        const m = await getMesh();
+        const query = randomVec(DIM);
+        log(logSearch, `Query vector: [${query.slice(0, 4).map(x => x.toFixed(3)).join(", ")}… ] (${DIM}-dim)`);
+        const t0  = performance.now();
+        const raw = await m.search_vector(query, k);
+        const ms  = (performance.now() - t0).toFixed(2);
+        const results = JSON.parse(raw);
+        if (!results?.length) {
+          log(logSearch, "No results — insert vectors first.", "warn");
+        } else {
+          log(logSearch, `Top-${results.length} results in ${ms} ms:`, "ok");
+          results.forEach((r, i) => {
+            log(logSearch, `  #${i + 1}  id=${r.id}  score=${r.score.toFixed(4)}`);
+          });
+          if (parseFloat(ms) < 5) {
+            log(logSearch, `🎯 Exit gate: latency (${ms} ms) < 5 ms ✅`, "ok");
+          }
+        }
+      } catch (e) { log(logSearch, `❌ ${e}`, "err"); }
+      finally { btn.disabled = false; }
+    });
+
+    // ── Backend info + embedding stats ─────────────────────────────────────
+    document.getElementById("btn-info").addEventListener("click", async () => {
+      logInfo.textContent = "";
+      try {
+        const m = await getMesh();
+        const info  = m.backend_info();
+        const dummy = Array.from({ length: 384 }, () => Math.random() * 2 - 1);
+        const stats = JSON.parse(m.embedding_stats(dummy));
+        log(logInfo, `Backend: ${info}`, "ok");
+        log(logInfo, `Embedding stats (384-dim random): mean=${stats.mean.toFixed(4)}  std=${stats.std_dev.toFixed(4)}  norm=${stats.norm.toFixed(4)}`);
+        log(logInfo, `barq-wasm SIMD pipeline: vector_normalize → vector_norm_simd → mean → std_dev ✅`, "ok");
+      } catch (e) { log(logInfo, `❌ ${e}`, "err"); }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,58 @@
+[package]
+name = "barq-mesh-web"
+version = "0.1.0"
+edition = "2021"
+description = "Browser-native distributed AI agent mesh — Rust/WASM"
+license = "MIT"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[features]
+default = []
+wasm = [
+    "barq-wasm/wasm",
+    "wasm-bindgen",
+    "wasm-bindgen-futures",
+    "js-sys",
+    "web-sys",
+    "console_error_panic_hook",
+    "serde-wasm-bindgen",
+    "getrandom/js",
+]
+
+[dependencies]
+# SIMD compute — Rust git dep
+barq-wasm = { git = "https://github.com/YASSERRMD/barq-wasm", default-features = false }
+
+# WASM / browser
+wasm-bindgen          = { version = "0.2", optional = true }
+wasm-bindgen-futures  = { version = "0.4", optional = true }
+js-sys                = { version = "0.3", optional = true }
+console_error_panic_hook = { version = "0.1", optional = true }
+serde-wasm-bindgen    = { version = "0.6", optional = true }
+getrandom             = { version = "0.2", optional = true }
+
+[dependencies.web-sys]
+version = "0.3"
+optional = true
+features = [
+    "console",
+    "Window",
+    "Worker",
+    "WorkerOptions",
+    "WorkerType",
+    "DedicatedWorkerGlobalScope",
+    "MessageChannel",
+    "MessagePort",
+    "MessageEvent",
+    "BroadcastChannel",
+    "Navigator",
+]
+
+# Core
+serde      = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+[dev-dependencies]
+wasm-bindgen-test = "0.3"
