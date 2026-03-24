@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Phase 7 — MCP Server Integration | barq-mesh-web</title>
+  <style>
+    :root {
+      --bg:#0d0d14;--surface:#13131f;--border:#1e1e2e;
+      --accent:#7c3aed;--accent2:#06b6d4;--text:#e2e8f0;
+      --muted:#64748b;--success:#10b981;--warn:#f59e0b;--err:#ef4444;
+    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{background:var(--bg);color:var(--text);font-family:'Inter',system-ui,sans-serif;
+         padding:2rem;min-height:100vh}
+    h1{font-size:1.5rem;background:linear-gradient(135deg,var(--accent),var(--accent2));
+       -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:.5rem}
+    p.sub{color:var(--muted);font-size:.85rem;margin-bottom:1.5rem}
+    .card{background:var(--surface);border:1px solid var(--border);border-radius:12px;
+          padding:1.5rem;margin-bottom:1rem}
+    .card h2{font-size:1rem;margin-bottom:1rem;color:var(--accent2)}
+    .btn{background:var(--accent);color:#fff;border:none;border-radius:8px;
+         padding:.5rem 1.2rem;cursor:pointer;font-size:.9rem;transition:opacity .2s}
+    .btn:hover{opacity:.85} .btn:disabled{opacity:.45;cursor:default}
+    .log{font-family:monospace;font-size:.8rem;background:#090911;border-radius:8px;
+         padding:1rem;max-height:260px;overflow-y:auto;line-height:1.6;
+         border:1px solid var(--border);margin-top:.75rem; white-space: pre-wrap;}
+    .ok{color:var(--success)} .warn{color:var(--warn)} .err{color:var(--err)}
+    .row{display:flex;gap:.65rem;align-items:center;flex-wrap:wrap;margin-bottom:.75rem}
+  </style>
+</head>
+<body>
+  <h1>Phase 7 — MCP Server Mode</h1>
+  <p class="sub">
+    Exposes <code>McpServer</code> which provides JSON-RPC logic to interact with AiMesh.
+    This allows a local proxy to export the Browser Context to standard MCP Desktop clients (Cursor / VSCode).
+  </p>
+
+  <div class="card">
+    <h2>1 — Simulated JSON-RPC MCP Requests</h2>
+    <div class="row">
+      <button class="btn" id="btn-list">Send tools/list Request</button>
+      <button class="btn" id="btn-call">Send tools/call (barq_run_agent) Request</button>
+    </div>
+    <div class="log" id="log-mcp">Server Idle…</div>
+  </div>
+
+  <script type="module">
+    import init, { AiMesh, McpServer } from "../../pkg/barq_mesh_web.js";
+
+    let mcpServer = null;
+
+    async function getServer() {
+      if (mcpServer) return mcpServer;
+      await init();
+      const mesh = AiMesh.create(1, "phase7-mcp", 384);
+      mcpServer = new McpServer(mesh);
+      return mcpServer;
+    }
+
+    function log(el, msg, cls = "") {
+      const line = document.createElement("div");
+      line.className = cls;
+      line.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
+      el.appendChild(line);
+      el.scrollTop = el.scrollHeight;
+    }
+
+    document.getElementById("btn-list").addEventListener("click", async () => {
+      const btn = document.getElementById("btn-list");
+      btn.disabled = true;
+      const el = document.getElementById("log-mcp");
+      el.innerHTML = "";
+      
+      try {
+        const srv = await getServer();
+        const reqStr = JSON.stringify({
+            jsonrpc: "2.0",
+            id: "1",
+            method: "tools/list"
+        });
+        log(el, `>> REQ: ${reqStr}`);
+
+        const resStr = await srv.handle_request(reqStr);
+        log(el, `<< RES: ${JSON.stringify(JSON.parse(resStr), null, 2)}`, "ok");
+      } catch (e) {
+        log(el, `❌ ${e}`, "err");
+      } finally {
+        btn.disabled = false;
+      }
+    });
+
+    document.getElementById("btn-call").addEventListener("click", async () => {
+       const btn = document.getElementById("btn-call");
+       btn.disabled = true;
+       const el = document.getElementById("log-mcp");
+       el.innerHTML = "";
+       
+       try {
+         const srv = await getServer();
+         const reqStr = JSON.stringify({
+             jsonrpc: "2.0",
+             id: "2",
+             method: "tools/call",
+             params: {
+                 name: "barq_run_agent",
+                 arguments: {
+                     prompt: "MCP Requested Autonomous Generation"
+                 }
+             }
+         });
+         
+         log(el, `>> REQ: ${reqStr}`);
+         log(el, `Wait... Running agent loop through MCP tunnel...`, "warn");
+
+         const resStr = await srv.handle_request(reqStr);
+         log(el, `<< RES:\n${JSON.stringify(JSON.parse(resStr), null, 2)}`, "ok");
+       } catch (e) {
+         log(el, `❌ ${e}`, "err");
+       } finally { 
+         btn.disabled = false;
+       }
+    });
+
+  </script>
+</body>
+</html>
