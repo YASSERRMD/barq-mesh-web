@@ -7,6 +7,7 @@ use std::cell::RefCell;
 
 #[cfg(feature = "wasm")]
 #[wasm_bindgen]
+#[derive(Clone)]
 pub struct AiMesh {
     // We keep store accessible 
     #[wasm_bindgen(skip)]

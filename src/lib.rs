@@ -13,6 +13,7 @@ pub mod store;
 pub mod worker;
 pub mod agents;
 pub mod llm;
+pub mod mcp;
 
 /// Called automatically when the WASM module is instantiated.
 /// Sets up the panic hook so Rust panics surface in the browser console.
@@ -31,3 +32,5 @@ pub use mesh::aimesh::AiMesh;
 pub use llm::inference::LlmRouter;
 #[cfg(feature = "wasm")]
 pub use mesh::topology::TopologyManager;
+#[cfg(feature = "wasm")]
+pub use mcp::server::McpServer;
