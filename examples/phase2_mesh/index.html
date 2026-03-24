@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Phase 2 — Mesh Queue + Worker Pool | barq-mesh-web</title>
+  <style>
+    :root {
+      --bg:#0d0d14;--surface:#13131f;--border:#1e1e2e;
+      --accent:#7c3aed;--accent2:#06b6d4;--text:#e2e8f0;
+      --muted:#64748b;--success:#10b981;--warn:#f59e0b;--err:#ef4444;
+    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{background:var(--bg);color:var(--text);font-family:'Inter',system-ui,sans-serif;
+         padding:2rem;min-height:100vh}
+    h1{font-size:1.5rem;background:linear-gradient(135deg,var(--accent),var(--accent2));
+       -webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:.5rem}
+    p.sub{color:var(--muted);font-size:.85rem;margin-bottom:1.5rem}
+    .card{background:var(--surface);border:1px solid var(--border);border-radius:12px;
+          padding:1.5rem;margin-bottom:1rem}
+    .btn{background:var(--accent);color:#fff;border:none;border-radius:8px;
+         padding:.5rem 1.2rem;cursor:pointer;font-size:.9rem;transition:opacity .2s}
+    .btn:hover{opacity:.85} .btn:disabled{opacity:.45;cursor:default}
+    .log{font-family:monospace;font-size:.8rem;background:#090911;border-radius:8px;
+         padding:1rem;max-height:300px;overflow-y:auto;line-height:1.6;
+         border:1px solid var(--border);margin-top:.75rem}
+    .ok{color:var(--success)} .warn{color:var(--warn)} .err{color:var(--err)}
+  </style>
+</head>
+<body>
+  <h1>Phase 2 — Mesh Queue + Worker Pool</h1>
+  <p class="sub">
+    Spawns 4 Web Workers. Fans out 50 tasks (Ingest, Compute, Embed).
+    Includes near-duplicates to test semantic dedup rejection.
+  </p>
+
+  <div class="card">
+    <button class="btn" id="btn-run">Run 50 Tasks</button>
+    <div class="log" id="log-output">Waiting…</div>
+  </div>
+
+  <script type="module">
+    import init, { BarqMeshWeb, WorkerPool } from "../../pkg/barq_mesh_web.js";
+
+    const logEl = document.getElementById("log-output");
+    function log(msg, cls = "") {
+      const line = document.createElement("div");
+      line.className = cls;
+      line.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
+      logEl.appendChild(line);
+      logEl.scrollTop = logEl.scrollHeight;
+    }
+
+    async function randomVec(dim) {
+      const v = new Array(dim);
+      let norm = 0;
+      for (let i = 0; i < dim; i++) { v[i] = Math.random() * 2 - 1; norm += v[i] * v[i]; }
+      norm = Math.sqrt(norm);
+      for (let i = 0; i < dim; i++) v[i] /= norm;
+      return v;
+    }
+
+    document.getElementById("btn-run").addEventListener("click", async () => {
+      const btn = document.getElementById("btn-run");
+      btn.disabled = true;
+      logEl.innerHTML = "";
+      try {
+        log("Initialising WASM…");
+        await init();
+        
+        // Setup store for dedup
+        const store = new BarqMeshWeb("phase2-mesh", 384);
+        
+        // Setup worker pool (4 workers)
+        const pool = new WorkerPool(4);
+        log("✅ WorkerPool spawned (4 workers)", "ok");
+
+        // Listen for results on BroadcastChannel (MeshBus equivalent in JS)
+        const bc = new BroadcastChannel("mesh-bus");
+        let completed = 0;
+        let expected = 50;
+
+        bc.onmessage = (ev) => {
+          const res = ev.data; // already object (parsed by browser or string JSON depending on implementation)
+          const r = typeof res === "string" ? JSON.parse(res) : res;
+          completed++;
+          
+          if (r.success) {
+             const key = Object.keys(r.output)[0] || 'done';
+             log(`Task [${r.task_id}] completed in ${r.latency_ms.toFixed(2)}ms — ${key}: ${JSON.stringify(r.output[key]).substring(0, 30)}...`, "ok");
+          } else {
+             log(`Task [${r.task_id}] failed: ${r.error}`, "err");
+          }
+
+          if (completed >= expected) {
+            const stats = JSON.parse(pool.get_stats());
+            log(`🎯 Exit gate: Completed=${stats.completed}. Total received=${completed}.`, "ok");
+            btn.disabled = false;
+          }
+        };
+
+        log("Generating 50 tasks (with deliberate duplicates)…");
+        
+        // Keep a specific vector to create duplicates
+        const dup_vec = await randomVec(384);
+        // Pre-insert it so dedup triggers
+        await store.upsert_vector(dup_vec, 999);
+        
+        for (let i = 0; i < 50; i++) {
+          let task = {
+            id: `task-${i}`,
+            task_type: "Embed",
+            priority: "Normal",
+            status: "Pending",
+            payload: { Embed: { inputs: await randomVec(8) } },
+            retry_count: 0
+          };
+
+          // Make some tasks Ingest to test dedup
+          if (i % 10 === 0) {
+            task.task_type = "Ingest";
+            task.priority = "High"; // High priority out of band
+            task.payload = { Ingest: { embedding: await randomVec(384) } };
+          }
+          
+          // Deliberate duplicate
+          if (i === 15 || i === 25) {
+             task.task_type = "Ingest";
+             task.payload = { Ingest: { embedding: dup_vec } }; // exact duplicate
+          }
+
+          // Some Compute tasks
+          if (i % 7 === 0) {
+             task.task_type = "Compute";
+             task.payload = { 
+               Compute: { 
+                 op: "Relu", 
+                 a: await randomVec(16), 
+                 b: [] 
+               } 
+             };
+          }
+
+          // Dispatch
+          await pool.dispatch_js(JSON.stringify(task), store);
+        }
+        
+        log("Dispatched. Awaiting processing...", "warn");
+        
+        // Wait a bit to check stats
+        setTimeout(() => {
+           const stats = JSON.parse(pool.get_stats());
+           log(`Current queue stats: queued=${stats.queued}, busy=${stats.busy}`, "warn");
+           expected = 50 - (50 - stats.completed - stats.queued - stats.busy); // Adjust for deduped
+        }, 100);
+
+      } catch (e) {
+        log(`❌ ${e}`, "err");
+        btn.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>
