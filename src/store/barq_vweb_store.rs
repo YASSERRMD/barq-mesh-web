@@ -77,6 +77,14 @@ extern "C" {
         top_k: usize,
     ) -> Promise;
 
+    /// Insert texts.
+    #[wasm_bindgen(method, js_name = "insert_texts")]
+    fn insert_texts(this: &BarqVWebJs, texts: &Array, metadata: &Array) -> Promise;
+
+    /// Search hybrid.
+    #[wasm_bindgen(method, js_name = "search")]
+    fn search(this: &BarqVWebJs, query: String, top_k: usize, hybrid: bool) -> Promise;
+
     /// Returns the number of indexed vectors.
     #[wasm_bindgen(method, js_name = "count")]
     fn count(this: &BarqVWebJs) -> usize;
@@ -222,6 +230,34 @@ impl BarqMeshWeb {
         let js_result = JsFuture::from(self.store.search_vector(&query_js, top_k)).await?;
 
         // ③ Return as JSON string (JS caller can JSON.parse)
+        let json = js_sys::JSON::stringify(&js_result)
+            .map(|s| s.as_string().unwrap_or_default())
+            .unwrap_or_default();
+        Ok(json)
+    }
+
+    /// Insert texts into barq-vweb, automatically computing MiniLM embeddings + BM25 index.
+    pub async fn ingest_texts(
+        &self,
+        texts: Vec<String>,
+    ) -> Result<usize, JsValue> {
+        let texts_arr = Array::new();
+        for t in texts {
+            texts_arr.push(&JsValue::from_str(&t));
+        }
+        let metadata_arr = Array::new(); // placeholder metadata
+        
+        JsFuture::from(self.store.insert_texts(&texts_arr, &metadata_arr)).await?;
+        Ok(self.count())
+    }
+
+    /// Hybrid or dense text search via barq-vweb.
+    pub async fn retrieve_hybrid(
+        &self,
+        query: String,
+        top_k: usize,
+    ) -> Result<String, JsValue> {
+        let js_result = JsFuture::from(self.store.search(query, top_k, true)).await?;
         let json = js_sys::JSON::stringify(&js_result)
             .map(|s| s.as_string().unwrap_or_default())
             .unwrap_or_default();
